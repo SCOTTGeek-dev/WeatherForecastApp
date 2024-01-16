@@ -1,0 +1,98 @@
+﻿@model WeatherForecastApp.Models.City
+
+@{
+    ViewData["Title"] = "City";
+}
+
+<style>
+    .live-status-indicator {
+        width: 10px;
+        height: 10px;
+        background-color: green;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px; /* Ajustez la marge selon vos besoins */
+        visibility: hidden; /* Ajout de la visibilité par défaut */
+    }
+</style>
+
+<script>
+    // JavaScript pour gérer le clignotement
+    function blink() {
+        var indicator = document.getElementById('live-status-indicator');
+        setInterval(function () {
+            indicator.style.visibility = (indicator.style.visibility == 'hidden' ? '' : 'hidden');
+        }, 1000); // Ajustez la durée du clignotement selon vos besoins
+    }
+
+    // Appeler la fonction blink lorsque la page est chargée
+    document.addEventListener('DOMContentLoaded', blink);
+</script>
+
+<div class="container mt-5" style="margin-left: 15px;">
+    <!-- Ajustez la marge selon vos besoins -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mx-auto">
+                <div class="card-body">
+                    <h2 class="card-title text-center">Weather Forecast for @Model.Name, @Model.Country</h2>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Temperature:</span> @Model.Temperature°
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Minimal Temperature:</span> @Model.TempMin °
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Maximal Temperature:</span> @Model.TempMax °
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Longitude :</span> @Model.Lon
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Largitude:</span> @Model.Lar
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Humidity:</span> @Model.Humidity%
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Pressure:</span> @Model.Pressure hPa
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Wind:</span> @Model.Wind Km/h
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Weather:</span> @Model.Weather
+                        </li>
+                        <li class="list-group-item">
+                            <span class="badge badge-primary">Country:</span> @Model.Country
+                        </li>
+
+                    </ul>
+
+                    <form method="get" class="text-center mt-3">
+                        <button type="submit" class="btn btn-primary" formaction="@Url.Action("SearchByCity", "WeatherForecast")">Go Back</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="text-right" style="margin-left: 125px;">
+                <!-- Ajustez la marge selon vos besoins -->
+                <!-- Indicateur d'état en direct -->
+                <div id="live-status-indicator" class="live-status-indicator"></div>
+                <p class="text-center" style="display: inline;">Real-time Location</p>
+
+                <!-- Premier Gadget -->
+                <script src="https://static.elfsight.com/platform/platform.js" data-use-service-core defer></script>
+                <div class="elfsight-app-465a97a5-c98b-4c25-a617-a6d952a44a36" data-elfsight-app-lazy></div>
+
+                <!-- Deuxième Gadget -->
+                <script src="https://static.elfsight.com/platform/platform.js" data-use-service-core defer></script>
+                <div class="elfsight-app-f53dd33a-0e9f-4080-b83a-793709ff87f4" data-elfsight-app-lazy></div>
+            </div>
+        </div>
+    </div>
+</div>

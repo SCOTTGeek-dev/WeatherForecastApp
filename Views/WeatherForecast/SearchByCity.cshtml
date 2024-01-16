@@ -1,0 +1,173 @@
+﻿@model WeatherForecastApp.Models.SearchByCity
+
+@{
+    ViewData["Title"] = "Weather Application - Home";
+}
+
+<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.minweather.css" />
+<br />
+<br />
+<style>
+    body {
+        /* Correct the background image path and add other properties */
+        background-image: url("file:///C:/Users/HP/Desktop/Weather.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    /* Ajoutez ce style pour mettre en évidence le titre h3 */
+    h3.text-muted {
+        font-size: 24px; /* Taille de la police */
+        font-weight: bold; /* Gras */
+        color: #fff; /* Couleur du texte */
+        background-color: #007bff; /* Couleur de fond */
+        padding: 10px; /* Espacement intérieur */
+        border-radius: 10px; /* Bordure arrondie */
+        text-align: center; /* Alignement au centre */
+    }
+</style>
+
+<h3 class="text-muted">
+    "Navigate and select your preferred location on the interactive map to embark on a personalized journey tailored to your city of choice."
+</h3>
+<br><div id="map" style="min-height:240px;min-width:240px;position:relative"></div>
+<br />
+<br />
+
+<div class="container">
+    <form method="post">
+        <br />
+        <div class="container">
+            <h2 class="text-center">Enter the city name. You can use the map above to search it.</h2>
+            <div class="d-flex justify-content-center">
+                <input asp-for="CityName" class="form-control" placeholder="Enter city name ..." />
+                <button asp-controller="WeatherForecast" asp-action="SearchByCity" class="btn btn-outline-primary ms-2">
+                    Search
+                </button>
+                <span asp-validation-for="CityName" class="text-danger ms-2"></span>
+            </div>
+        </div>
+    </form>
+</div>
+<br />
+<br />
+<br />
+<br />
+<br />
+<hr />
+<br />
+@section scripts {
+    <!-- Include Leaflet CSS and JavaScript -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        function getRandomCoordinate(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // Liste des capitales européennes avec leurs coordonnées
+        var europeanCapitals = [
+            { name: 'Paris', lat: 48.8566, lon: 2.3522 },
+            { name: 'Berlin', lat: 52.5200, lon: 13.4050 },
+            { name: 'London', lat: 51.5099, lon: -0.1180 },
+            { name: 'Madrid', lat: 40.4168, lon: -3.7038 },
+            { name: 'Rome', lat: 41.9028, lon: 12.4964 },
+            { name: 'Athens', lat: 37.9838, lon: 23.7275 },
+            { name: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
+            { name: 'Vienna', lat: 48.8566, lon: 2.3522 },
+            { name: 'Lisbon', lat: 38.7223, lon: -9.1393 },
+            { name: 'Brussels', lat: 50.8503, lon: 4.3517 },
+            { name: 'Oslo', lat: 59.9139, lon: 10.7522 },
+            { name: 'Stockholm', lat: 59.3293, lon: 18.0686 },
+            { name: 'Copenhagen', lat: 55.6761, lon: 12.5683 },
+            { name: 'Warsaw', lat: 52.5200, lon: 21.0050 },
+            { name: 'Budapest', lat: 47.4979, lon: 19.0402 },
+            { name: 'Prague', lat: 50.0755, lon: 14.4378 },
+            { name: 'Helsinki', lat: 60.1695, lon: 24.9354 },
+            { name: 'Dublin', lat: 53.3498, lon: -6.2603 },
+            { name: 'Ljubljana', lat: 46.0569, lon: 14.5058 },
+            { name: 'Bratislava', lat: 48.1486, lon: 17.1077 },
+            { name: 'Cairo', lat: 30.0330, lon: 31.2336 },
+            { name: 'Nairobi', lat: -1.286389, lon: 36.817223 },
+            { name: 'Lagos', lat: 6.5244, lon: 3.3792 },
+            { name: 'Pretoria', lat: -25.7461, lon: 28.1881 },
+            { name: 'Accra', lat: 5.5600, lon: -0.2050 },
+            { name: 'Addis Ababa', lat: 9.1450, lon: 40.4897 },
+            { name: 'Dakar', lat: 14.6928, lon: -17.4467 },
+            { name: 'Abuja', lat: 9.0579, lon: 7.4951 },
+            { name: 'Rabat', lat: 34.0209, lon: -6.8416 },
+            { name: 'Harare', lat: -17.8292, lon: 31.0522 },
+            { name: 'Kampala', lat: 0.3136, lon: 32.5811 },
+            { name: 'Maputo', lat: -25.9653, lon: 32.5892 },
+            { name: 'Bamako', lat: 12.6392, lon: -8.0029 },
+            { name: 'Brazzaville', lat: -4.2660, lon: 15.2832 },
+            { name: 'Washington, D.C.', lat: 38.8951100, lon: -77.0363700 },
+            { name: 'Ottawa', lat: 45.4215300, lon: -75.6992700 },
+            { name: 'Mexico City', lat: 19.4326000, lon: -99.1332000 },
+            { name: 'Brasília', lat: -15.7801000, lon: -47.9292000 },
+            { name: 'Buenos Aires', lat: -34.6118000, lon: -58.4173000 },
+            { name: 'Lima', lat: -12.0464000, lon: -77.0428000 },
+            { name: 'Ottawa', lat: 45.4215300, lon: -75.6992700 },
+            { name: 'Canberra', lat: -35.3081000, lon: 149.1246000 },
+            { name: 'Tokyo', lat: 35.6895, lon: 139.6917 },
+            { name: 'Beijing', lat: 39.9042, lon: 116.4074 },
+            { name: 'New Delhi', lat: 28.6139, lon: 77.2090 },
+            { name: 'Seoul', lat: 37.5665, lon: 126.9780 },
+            { name: 'Jakarta', lat: -6.2088, lon: 106.8456 },
+            { name: 'Bangkok', lat: 13.7563, lon: 100.5018 },
+            { name: 'Hanoi', lat: 21.0285, lon: 105.8542 },
+            { name: 'Ankara', lat: 39.9334, lon: 32.8597 },
+            { name: 'Riyadh', lat: 24.7136, lon: 46.6753 },
+            { name: 'Doha', lat: 25.276987, lon: 51.520008 },
+            { name: 'Wellington', lat: -41.2866, lon: 174.7734 },
+            { name: 'Suva', lat: -18.1248, lon: 178.4501 },
+            { name: 'Honiara', lat: -9.4330, lon: 160.0510 },
+            { name: 'Apia', lat: -13.8483, lon: -171.7486 },
+            { name: 'Port Moresby', lat: -9.4438, lon: 147.1803 },
+            { name: 'Nukuʻalofa', lat: -21.1360, lon: -175.2160 },
+            { name: 'Washington, D.C.', lat: 38.8951, lon: -77.0364 },
+            { name: 'Ottawa', lat: 45.4215, lon: -75.6993 },
+            { name: 'Mexico City', lat: 19.4326, lon: -99.1332 },
+            { name: 'Buenos Aires', lat: -34.6118, lon: -58.4173 },
+            { name: 'Brasília', lat: -15.7801, lon: -47.9292 },
+            { name: 'Lima', lat: -12.0464, lon: -77.0428 },
+            // Ajoutez d'autres capitales au besoin
+        ];
+
+        // Choisissez aléatoirement une capitale européenne
+        var randomCapital = europeanCapitals[Math.floor(Math.random() * europeanCapitals.length)];
+
+        var map = L.map('map').setView([randomCapital.lat, randomCapital.lon], 8);
+
+        // Utilisez les tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Ajoutez un marqueur à la position de la capitale choisie aléatoirement
+        L.marker([randomCapital.lat, randomCapital.lon]).addTo(map);
+    </script>
+
+
+    <!-- Section for Google Search Form -->
+    <script>
+        function searchGoogle() {
+            var searchTerm = document.getElementById('searchInput').value;
+
+            if (searchTerm.trim() !== '') {
+                // Build the Google search URL
+                var googleSearchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(searchTerm);
+
+                // Redirect the user to the Google search URL in a new window/tab
+                window.open(googleSearchUrl, '_blank');
+            }
+        }
+
+        // You can also listen to the form submission event
+        document.getElementById('googleSearchForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            searchGoogle();
+        });
+    </script>
+}
